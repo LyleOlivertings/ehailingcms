@@ -22,16 +22,17 @@ export default function NewRidePage() {
 
   // Calculate quote whenever relevant fields change
 
-  const calculateQuote = () => {
-    const vehicle = vehicleTypes.find((v) => v.name === formData.vehicleType);
-    const base = vehicle.baseRate;
-    const distanceCost = formData.distance * vehicle.perKmRate;
-    setQuote(base + distanceCost);
-  };
+useEffect(() => {
+  calculateQuote();
+}, [formData.vehicleType, formData.passengers, formData.distance, calculateQuote]);
 
-  useEffect(() => {
-    calculateQuote();
-  }, [formData.vehicleType, formData.passengers, formData.distance]);
+// Memoize the calculateQuote function
+const calculateQuote = useCallback(() => {
+  const vehicle = vehicleTypes.find(v => v.name === formData.vehicleType);
+  const base = vehicle.baseRate;
+  const distanceCost = formData.distance * vehicle.perKmRate;
+  setQuote(base + distanceCost);
+}, [formData.vehicleType, formData.distance]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
