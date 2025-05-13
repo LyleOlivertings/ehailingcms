@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+
+    .header { background-color: #003DA5; color: white; padding: 20px; }
+    .content { padding: 30px; font-family: Arial, sans-serif; }
+    .cta { background-color: #DE3831; color: white; padding: 10px 20px; text-decoration: none; }
+    .footer { background-color: #f5f5f5; padding: 20px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Cape Rides</h1>
+    <p>Your Ride Confirmation</p>
+  </div>
+
+  <div class="content">
+    <p>Hello {{customerName}},</p>
+    <p>Your ride with Cape Rides has been confirmed. Here are your details:</p>
+
+    <h2>Ride Details</h2>
+    <p><strong>Pickup:</strong> {{pickupLocation}}</p>
+    <p><strong>Dropoff:</strong> {{dropoffLocation}}</p>
+    <p><strong>Vehicle Type:</strong> {{vehicleType}}</p>
+    <p><strong>Passengers:</strong> {{passengers}}</p>
+    <p><strong>Total Fare:</strong> R{{totalFare}}</p>
+    <p><strong>Status:</strong> {{status}}</p>
+
+    <p>Need to make changes? Contact us at +27 21 123 4567</p>
+    
+    <p>Safe travels,<br>
+    The Cape Rides Team</p>
+  </div>
+
+  <div class="footer">
+    <p>© 2024 Cape Rides | Cape Town, South Africa</p>
+  </div>
+</body>
+</html>

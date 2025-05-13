@@ -1,103 +1,126 @@
-import Image from "next/image";
+'use client';
+import { useState } from 'react';
+import { vehicleTypes } from '../lib/pricing';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
-export default function Home() {
+export default function QuoteCalculator() {
+  const [selectedVehicle, setSelectedVehicle] = useState(vehicleTypes[0]);
+  const [passengers, setPassengers] = useState(1);
+  const [distance, setDistance] = useState(10);
+  const [quote, setQuote] = useState(null);
+
+  const calculateQuote = () => {
+    const base = selectedVehicle.baseRate;
+    const distanceCost = distance * selectedVehicle.perKmRate;
+    const total = base + distanceCost;
+    setQuote(total);
+  };
+
+  const isValidPassengers = passengers <= selectedVehicle.maxPassengers;
+  const isValidDistance = distance > 0;
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+        <div className="p-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">E-Hailing Quote Calculator</h1>
+          
+          {/* Vehicle Selection */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Vehicle Type</label>
+            <div className="grid grid-cols-2 gap-4">
+              {vehicleTypes.map((vehicle) => (
+                <button
+                  key={vehicle.name}
+                  onClick={() => setSelectedVehicle(vehicle)}
+                  className={`p-4 border rounded-lg ${selectedVehicle.name === vehicle.name 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-gray-200 hover:border-blue-300'}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{vehicle.icon}</span>
+                    <div>
+                      <p className="font-medium text-gray-900">{vehicle.name}</p>
+                      <p className="text-sm text-gray-500">
+                        Up to {vehicle.maxPassengers} passengers
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+          {/* Passengers Input */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Number of Passengers
+              <span className="ml-2 text-gray-400 text-sm">
+                (Max {selectedVehicle.maxPassengers})
+              </span>
+            </label>
+            <input
+              type="number"
+              min="1"
+              max={selectedVehicle.maxPassengers}
+              value={passengers}
+              onChange={(e) => setPassengers(Math.min(e.target.value, selectedVehicle.maxPassengers))}
+              className="w-full p-2 border border-gray-300 rounded-md"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {!isValidPassengers && (
+              <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                <InformationCircleIcon className="h-4 w-4" />
+                Exceeds vehicle capacity
+              </p>
+            )}
+          </div>
+
+          {/* Distance Input */}
+          <div className="mb-8">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Distance (km)
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={distance}
+              onChange={(e) => setDistance(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md"
+            />
+            {!isValidDistance && (
+              <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                <InformationCircleIcon className="h-4 w-4" />
+                Please enter a valid distance
+              </p>
+            )}
+          </div>
+
+          {/* Calculate Button */}
+          <button
+            onClick={calculateQuote}
+            disabled={!isValidPassengers || !isValidDistance}
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Read our docs
-          </a>
+            Calculate Quote
+          </button>
+
+          {/* Quote Display */}
+          {quote && (
+            <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+              <h2 className="text-lg font-semibold text-green-800">
+                Your Quote:
+                <span className="ml-2 text-2xl">
+                  R{quote.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}
+                </span>
+              </h2>
+              <p className="text-sm text-green-700 mt-2">
+                Breakdown: R{selectedVehicle.baseRate.toFixed(2)} base + 
+                (R{selectedVehicle.perKmRate.toFixed(2)}/km × {distance}km)
+              </p>
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
