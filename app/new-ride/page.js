@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from "next/navigation";
 import { vehicleTypes } from "@/lib/pricing";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
