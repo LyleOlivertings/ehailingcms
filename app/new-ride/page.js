@@ -4,35 +4,47 @@ import { useRouter } from "next/navigation";
 import { vehicleTypes } from "@/lib/pricing";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
+const DEFAULT_VEHICLE_TYPE = vehicleTypes.length > 0 
+  ? vehicleTypes[0].name 
+  : '';
+
 export default function NewRidePage() {
   const router = useRouter();
-  const [selectedVehicle, setSelectedVehicle] = useState(vehicleTypes[0]);
+  const [selectedVehicle, setSelectedVehicle] = useState(
+    vehicleTypes.find(v => v.name === DEFAULT_VEHICLE_TYPE) || vehicleTypes[0]
+  );
   const [quote, setQuote] = useState(0);
-  const [error, setError] = useState("");
-
+  const [error, setError] = useState('');
+  
   const [formData, setFormData] = useState({
-    customerName: "",
-    customerPhone: "",
-    vehicleType: vehicleTypes[0].name,
+    customerName: '',
+    customerPhone: '',
+    vehicleType: DEFAULT_VEHICLE_TYPE,
     passengers: 1,
     distance: 10,
-    pickupLocation: "",
-    dropoffLocation: "",
+    pickupLocation: '',
+    dropoffLocation: '',
+    rideDate: '',
+    rideTime: '',
+    duration: 30
   });
 
   // Calculate quote whenever relevant fields change
 
-useEffect(() => {
-  calculateQuote();
-}, [formData.vehicleType, formData.passengers, formData.distance, calculateQuote]);
+ const calculateQuote = useCallback(() => {
+    const vehicle = vehicleTypes.find(v => v.name === formData.vehicleType);
+    if (!vehicle) {
+      setQuote(0);
+      return;
+    }
+    const base = vehicle.baseRate;
+    const distanceCost = formData.distance * vehicle.perKmRate;
+    setQuote(base + distanceCost);
+  }, [formData.vehicleType, formData.distance]);
 
-// Memoize the calculateQuote function
-const calculateQuote = useCallback(() => {
-  const vehicle = vehicleTypes.find(v => v.name === formData.vehicleType);
-  const base = vehicle.baseRate;
-  const distanceCost = formData.distance * vehicle.perKmRate;
-  setQuote(base + distanceCost);
-}, [formData.vehicleType, formData.distance]);
+  useEffect(() => {
+    calculateQuote();
+  }, [calculateQuote]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
