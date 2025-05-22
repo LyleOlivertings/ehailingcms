@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import Ride from '@/models/Ride';
 import Customer from '@/models/Customer';
 import dbConnect from '@/lib/db';
-import { vehicleTypes } from '@/lib/pricing'; // Add this import
+import { vehicleTypes } from '@/lib/pricing'; 
+import { processTemplate, sendEmail } from '@/lib/email';
 
 export async function POST(request) {
   await dbConnect();
@@ -13,8 +14,15 @@ export async function POST(request) {
   if (!customer) {
     customer = await Customer.create({
       name: data.customerName,
-      phone: data.customerPhone
+      phone: data.customerPhone,
+      email: data.customerEmail // Add email
     });
+  } else {
+    // Update email if provided and different
+    if (data.customerEmail && customer.email !== data.customerEmail) {
+      customer.email = data.customerEmail;
+      await customer.save();
+    }
   }
 
   // Calculate quote
@@ -31,6 +39,31 @@ export async function POST(request) {
     pickupLocation: data.pickupLocation,
     dropoffLocation: data.dropoffLocation
   });
+
+  
+  if (customer.email) {
+    const templateData = {
+      customerName: customer.name,
+      pickupLocation: ride.pickupLocation,
+      dropoffLocation: ride.dropoffLocation,
+      vehicleType: ride.vehicleType,
+      passengers: ride.passengers,
+      totalFare: ride.quoteAmount.toFixed(2),
+      status: "Confirmed",
+    };
+
+    try {
+      const htmlBody = await processTemplate('emails/ride-confirmation.html', templateData);
+      await sendEmail({
+        to: customer.email,
+        subject: 'Your Cape Rides Confirmation',
+        html: htmlBody,
+      });
+      console.log('Confirmation email sent to:', customer.email);
+    } catch (error) {
+      console.error('Failed to send confirmation email:', error);
+    }
+  }
 
   return NextResponse.json(ride);
 }

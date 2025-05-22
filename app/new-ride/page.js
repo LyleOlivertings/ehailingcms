@@ -1,38 +1,38 @@
 "use client";
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { vehicleTypes } from "@/lib/pricing";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 
-const DEFAULT_VEHICLE_TYPE = vehicleTypes.length > 0 
-  ? vehicleTypes[0].name 
-  : '';
+const DEFAULT_VEHICLE_TYPE =
+  vehicleTypes.length > 0 ? vehicleTypes[0].name : "";
 
 export default function NewRidePage() {
   const router = useRouter();
   const [selectedVehicle, setSelectedVehicle] = useState(
-    vehicleTypes.find(v => v.name === DEFAULT_VEHICLE_TYPE) || vehicleTypes[0]
+    vehicleTypes.find((v) => v.name === DEFAULT_VEHICLE_TYPE) || vehicleTypes[0]
   );
   const [quote, setQuote] = useState(0);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   const [formData, setFormData] = useState({
-    customerName: '',
-    customerPhone: '',
+    customerName: "",
+    customerPhone: "",
+    customerEmail: "",
     vehicleType: DEFAULT_VEHICLE_TYPE,
     passengers: 1,
     distance: 10,
-    pickupLocation: '',
-    dropoffLocation: '',
-    rideDate: '',
-    rideTime: '',
-    duration: 30
+    pickupLocation: "",
+    dropoffLocation: "",
+    rideDate: "",
+    rideTime: "",
+    duration: 30,
   });
 
   // Calculate quote whenever relevant fields change
 
- const calculateQuote = useCallback(() => {
-    const vehicle = vehicleTypes.find(v => v.name === formData.vehicleType);
+  const calculateQuote = useCallback(() => {
+    const vehicle = vehicleTypes.find((v) => v.name === formData.vehicleType);
     if (!vehicle) {
       setQuote(0);
       return;
@@ -58,6 +58,14 @@ export default function NewRidePage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (
+      formData.customerEmail &&
+      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.customerEmail)
+    ) {
+      setError("Please enter a valid email address");
+      return;
+    }
 
     // Validate inputs
     const vehicle = vehicleTypes.find((v) => v.name === formData.vehicleType);
@@ -130,6 +138,18 @@ export default function NewRidePage() {
               title="10-digit South African phone number"
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Email</label>
+          <input
+            type="email"
+            name="customerEmail"
+            className="w-full p-2 border border-gray-300 rounded-md"
+            value={formData.customerEmail}
+            onChange={handleInputChange}
+            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
+          />
         </div>
 
         {/* Ride Details */}
